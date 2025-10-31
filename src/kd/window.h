@@ -18,6 +18,8 @@ typedef struct kd_window {
 
 extern kd_window* kd_window_create(kd_context* ctx, uint32_t width, uint32_t height, const char* title);
 
+extern void kd_window_initialize(kd_context* ctx, kd_window* win);
+
 extern void kd_window_destroy(kd_context* ctx, kd_window* win);
 
 extern int8_t kd_window_closed(kd_context* ctx, kd_window* win);
