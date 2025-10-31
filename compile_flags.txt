@@ -1,0 +1,6 @@
+--target=x86_64-linux-gnu
+-Wall
+-std=gnu99
+-m64
+-ggdb
+-Isrc
