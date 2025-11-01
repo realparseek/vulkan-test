@@ -7,6 +7,7 @@ int main() {
   kd_renderer* rndr = kd_renderer_create(&kctx, win, KD_RENDERER_TYPE_VULKAN);
 
   kd_window_initialize(&kctx, win);
+  kd_renderer_initialize(&kctx, rndr);
 
   while (!kd_window_closed(&kctx, win)) {
     kd_window_update(&kctx, win);

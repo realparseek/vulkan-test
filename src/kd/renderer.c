@@ -5,7 +5,7 @@
 
 kd_renderer* kd_renderer_create(kd_context* ctx, kd_window* output_win, kd_renderer_api api) {
   switch (api) {
-    case KD_RENDERER_TYPE_VULKAN:
+    case KD_RENDERER_API_VULKAN:
       return (kd_renderer*)kd_vk_renderer_create(ctx, output_win);
       break;
     default:
@@ -13,9 +13,19 @@ kd_renderer* kd_renderer_create(kd_context* ctx, kd_window* output_win, kd_rende
   }
 }
 
+void kd_renderer_initialize(kd_context* ctx, kd_renderer* rndr) {
+  switch (rndr->api) {
+    case KD_RENDERER_API_VULKAN:
+      kd_vk_renderer_initialize(ctx, (kd_vk_renderer*)rndr);
+      break;
+    default:
+      return;
+  }
+}
+
 void kd_renderer_destroy(kd_context* ctx, kd_renderer* rndr) {
   switch (rndr->api) {
-    case KD_RENDERER_TYPE_VULKAN:
+    case KD_RENDERER_API_VULKAN:
       kd_vk_renderer_destroy(ctx, (kd_vk_renderer*)rndr);
       break;
     default:

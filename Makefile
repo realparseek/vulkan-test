@@ -2,7 +2,7 @@ MAIN_SRCFILES = $(shell find src -name "*.c")
 MAIN_OBJFILES = $(patsubst src/%.c, build/obj/main/%.o, $(MAIN_SRCFILES))
 MAIN_TARGET = build/main1
 MAIN_INCLUDE = -Isrc
-MAIN_LINK = -lglfw
+MAIN_LINK = -lglfw -lvulkan
 MAIN_CFLAGS = -Wall -std=gnu99 -m64 -ggdb
 
 C = gcc
