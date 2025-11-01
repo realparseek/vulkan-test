@@ -1,5 +1,6 @@
 #include <kd/vk/utils.h>
 #include <kd/glfw/glfw.h>
+#include <kd/glfw/window.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -110,5 +111,53 @@ void _kd_vk_renderer_create_debug_messenger(kd_vk_renderer* rndr, VkInstance ins
   
   if (_vk_create_dum(instance, &dumCreateInfo, NULL, messenger) != VK_SUCCESS) {
     puts("failed to create vulkan debug messenger");
+  }
+}
+
+void _kd_vk_renderer_create_surface(kd_vk_renderer* rndr, VkInstance instance, VkSurfaceKHR* surface) {
+  if (rndr->rndr.win->api == KD_WINDOW_API_GLFW) {
+    if (glfwCreateWindowSurface(instance, ((kd_glfw_window*)rndr->rndr.win)->handle, NULL, surface)) {
+      puts("failed to create vulkan surface");
+    }
+  }
+  else {
+    puts("failed to create vulkan surface (window api not recognized)");
+  }
+}
+
+void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance instance, kd_vk_physical_device* pdevice) {
+  uint32_t deviceCount = 0;
+  vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
+  VkPhysicalDevice devices[deviceCount];
+  vkEnumeratePhysicalDevices(instance, &deviceCount, devices);
+
+  pdevice->pdevice = VK_NULL_HANDLE;
+  for (uint32_t i = 0; i < deviceCount; i++) {
+    VkPhysicalDeviceProperties deviceProperties = {};
+    vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
+    VkPhysicalDeviceFeatures deviceFeatures = {};
+    vkGetPhysicalDeviceFeatures(devices[i], &deviceFeatures);
+
+    if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+      pdevice->pdevice = devices[i];
+      pdevice->properties = deviceProperties;
+      pdevice->features = deviceFeatures;
+      printf("Selected device: %s\n", deviceProperties.deviceName);
+      break;
+    }
+  }
+  
+  uint32_t qFamiliesCount = 0;
+  vkGetPhysicalDeviceQueueFamilyProperties(pdevice->pdevice, &qFamiliesCount, NULL);
+  VkQueueFamilyProperties qFamilyProperties[qFamiliesCount]; 
+  vkGetPhysicalDeviceQueueFamilyProperties(pdevice->pdevice, &qFamiliesCount, qFamilyProperties);
+  
+  pdevice->graphicsFamilyIndex = -1;
+  for (int i = 0; i < qFamiliesCount; i++) {
+    if (qFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      pdevice->graphicsFamilyIndex = i;
+      printf("Selected queue family index: %u\n", i);
+      break;
+    }
   }
 }

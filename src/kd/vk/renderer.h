@@ -5,10 +5,19 @@
 
 #include <kd/vk/vulkan.h>
 
+typedef struct kd_vk_physical_device {
+  VkPhysicalDevice pdevice;
+  VkPhysicalDeviceProperties properties;
+  VkPhysicalDeviceFeatures features;
+  uint32_t graphicsFamilyIndex;
+} kd_vk_physical_device;
+
 typedef struct kd_vk_renderer {
   kd_renderer rndr;
   VkInstance instance;
   VkDebugUtilsMessengerEXT debugMessenger;
+  VkSurfaceKHR surface;
+  kd_vk_physical_device pdevice;
 } kd_vk_renderer;
 
 extern kd_vk_renderer* kd_vk_renderer_create(kd_context* ctx, kd_window* output_win);

@@ -16,3 +16,7 @@ extern VKAPI_ATTR VkBool32 VKAPI_CALL _kd_vk_renderer_debug_callback(
 );
 
 extern void _kd_vk_renderer_create_debug_messenger(kd_vk_renderer* rndr, VkInstance instance, VkDebugUtilsMessengerEXT* messenger);
+
+extern void _kd_vk_renderer_create_surface(kd_vk_renderer* rndr, VkInstance instance, VkSurfaceKHR* surface);
+
+extern void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance instance, kd_vk_physical_device* pdevice);
