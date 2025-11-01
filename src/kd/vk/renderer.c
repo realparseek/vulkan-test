@@ -22,7 +22,7 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   _kd_vk_renderer_create_instance(rndr, &instance);
   _kd_vk_renderer_create_debug_messenger(rndr, instance, &debugMessenger);
   _kd_vk_renderer_create_surface(rndr, instance, &surface);
-  _kd_vk_renderer_choose_physical_device(rndr, instance, &pdevice);
+  _kd_vk_renderer_choose_physical_device(rndr, instance, surface, &pdevice);
 
   rndr->instance = instance;
   rndr->debugMessenger = debugMessenger;

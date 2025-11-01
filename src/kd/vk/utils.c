@@ -125,7 +125,7 @@ void _kd_vk_renderer_create_surface(kd_vk_renderer* rndr, VkInstance instance, V
   }
 }
 
-void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance instance, kd_vk_physical_device* pdevice) {
+void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance instance, VkSurfaceKHR surface, kd_vk_physical_device* pdevice) {
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
   VkPhysicalDevice devices[deviceCount];
@@ -156,7 +156,17 @@ void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance ins
   for (int i = 0; i < qFamiliesCount; i++) {
     if (qFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
       pdevice->graphicsFamilyIndex = i;
-      printf("Selected queue family index: %u\n", i);
+      printf("Selected graphics queue family index: %u\n", i);
+      break;
+    }
+  }
+  
+  for (int i = 0; i < qFamiliesCount; i++) {
+    VkBool32 presentSupported = VK_FALSE;
+    vkGetPhysicalDeviceSurfaceSupportKHR(pdevice->pdevice, i, surface, &presentSupported);
+    if (presentSupported == VK_TRUE) {
+      pdevice->presentFamilyIndex = i;
+      printf("Selected present queue family index: %u\n", i);
       break;
     }
   }

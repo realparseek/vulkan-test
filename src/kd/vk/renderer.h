@@ -10,6 +10,7 @@ typedef struct kd_vk_physical_device {
   VkPhysicalDeviceProperties properties;
   VkPhysicalDeviceFeatures features;
   uint32_t graphicsFamilyIndex;
+  uint32_t presentFamilyIndex;
 } kd_vk_physical_device;
 
 typedef struct kd_vk_renderer {

@@ -19,4 +19,4 @@ extern void _kd_vk_renderer_create_debug_messenger(kd_vk_renderer* rndr, VkInsta
 
 extern void _kd_vk_renderer_create_surface(kd_vk_renderer* rndr, VkInstance instance, VkSurfaceKHR* surface);
 
-extern void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance instance, kd_vk_physical_device* pdevice);
+extern void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance instance, VkSurfaceKHR surface, kd_vk_physical_device* pdevice);
