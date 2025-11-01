@@ -2,10 +2,7 @@
 
 #include <kd/window.h>
 
-#if !defined(GLFW_INCLUDE_NONE)
-  #define GLFW_INCLUDE_NONE
-#endif
-#include <GLFW/glfw3.h>
+#include <kd/glfw/glfw.h>
 
 typedef struct kd_glfw_window {
   kd_window win;

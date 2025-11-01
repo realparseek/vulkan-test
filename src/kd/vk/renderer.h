@@ -3,11 +3,12 @@
 #include <kd/context.h>
 #include <kd/renderer.h>
 
-#include <vulkan/vulkan.h>
+#include <kd/vk/vulkan.h>
 
 typedef struct kd_vk_renderer {
   kd_renderer rndr;
   VkInstance instance;
+  VkDebugUtilsMessengerEXT debugMessenger;
 } kd_vk_renderer;
 
 extern kd_vk_renderer* kd_vk_renderer_create(kd_context* ctx, kd_window* output_win);
