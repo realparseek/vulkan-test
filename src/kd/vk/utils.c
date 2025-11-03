@@ -176,27 +176,24 @@ void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance ins
 
 void _kd_vk_renderer_create_device(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice* device) {
   float qPriority = 1.0f;
-  // VkDeviceQueueCreateInfo qCreateInfos[2];
-  // qCreateInfos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  // qCreateInfos[0].queueFamilyIndex = pdevice->graphicsFamilyIndex;
-  // qCreateInfos[0].queueCount = 1;
-  // qCreateInfos[0].pQueuePriorities = &qPriority;
+  VkDeviceQueueCreateInfo qCreateInfos[2] = { {}, {} };
+  qCreateInfos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+  qCreateInfos[0].queueFamilyIndex = pdevice->graphicsFamilyIndex;
+  qCreateInfos[0].queueCount = 1;
+  qCreateInfos[0].pQueuePriorities = &qPriority;
   
-  // qCreateInfos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  // qCreateInfos[1].queueFamilyIndex = pdevice->presentFamilyIndex;
-  // qCreateInfos[1].queueCount = 1;
-  // qCreateInfos[1].pQueuePriorities = &qPriority; 
-  
-  VkDeviceQueueCreateInfo qCreateInfos = {};
-  qCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  qCreateInfos.queueFamilyIndex = pdevice->graphicsFamilyIndex;
-  qCreateInfos.queueCount = 1;
-  qCreateInfos.pQueuePriorities = &qPriority;
-
+  qCreateInfos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+  qCreateInfos[1].queueFamilyIndex = pdevice->presentFamilyIndex;
+  qCreateInfos[1].queueCount = 1;
+  qCreateInfos[1].pQueuePriorities = &qPriority; 
+   
   VkDeviceCreateInfo deviceCreateInfo = {};
   deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  deviceCreateInfo.pQueueCreateInfos = &qCreateInfos;
-  deviceCreateInfo.queueCreateInfoCount = 1;
+  deviceCreateInfo.pQueueCreateInfos = qCreateInfos;
+  if (pdevice->graphicsFamilyIndex == pdevice->presentFamilyIndex)
+    deviceCreateInfo.queueCreateInfoCount = 1;
+  else
+    deviceCreateInfo.queueCreateInfoCount = 2;
   deviceCreateInfo.pEnabledFeatures = &pdevice->features;
   deviceCreateInfo.enabledExtensionCount = 0;
   deviceCreateInfo.enabledLayerCount = 0;
@@ -204,4 +201,12 @@ void _kd_vk_renderer_create_device(kd_vk_renderer* rndr, kd_vk_physical_device* 
   if (vkCreateDevice(pdevice->pdevice, &deviceCreateInfo, NULL, device) != VK_SUCCESS) {
     puts("failed to create vulkan's logical device");
   }
+}
+
+void _kd_vk_renderer_get_graphics_queue(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice* ldevice, VkQueue* queue) {
+  vkGetDeviceQueue(*ldevice, pdevice->graphicsFamilyIndex, 0, queue);
+}
+
+void _kd_vk_renderer_get_present_queue(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice* ldevice, VkQueue* queue) {
+  vkGetDeviceQueue(*ldevice, pdevice->presentFamilyIndex, 0, queue);
 }

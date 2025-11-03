@@ -22,3 +22,7 @@ extern void _kd_vk_renderer_create_surface(kd_vk_renderer* rndr, VkInstance inst
 extern void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance instance, VkSurfaceKHR surface, kd_vk_physical_device* pdevice);
 
 extern void _kd_vk_renderer_create_device(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice* device);
+
+extern void _kd_vk_renderer_get_graphics_queue(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice* ldevice, VkQueue* queue);
+
+extern void _kd_vk_renderer_get_present_queue(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice* ldevice, VkQueue* queue);

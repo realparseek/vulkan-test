@@ -25,6 +25,8 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   _kd_vk_renderer_create_surface(rndr, instance, &surface);
   _kd_vk_renderer_choose_physical_device(rndr, instance, surface, &pdevice);
   _kd_vk_renderer_create_device(rndr, &pdevice, &device);
+  _kd_vk_renderer_get_graphics_queue(rndr, &pdevice, &device, &pdevice.graphicsQueue);
+  _kd_vk_renderer_get_present_queue(rndr, &pdevice, &device, &pdevice.presentQueue);
 
   rndr->instance = instance;
   rndr->debugMessenger = debugMessenger;
