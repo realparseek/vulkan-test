@@ -11,6 +11,8 @@ typedef struct kd_vk_physical_device {
   VkPhysicalDeviceFeatures features;
   uint32_t graphicsFamilyIndex;
   uint32_t presentFamilyIndex;
+  VkQueue graphicsQueue;
+  VkQueue presentQueue;
 } kd_vk_physical_device;
 
 typedef struct kd_vk_renderer {
@@ -19,6 +21,7 @@ typedef struct kd_vk_renderer {
   VkDebugUtilsMessengerEXT debugMessenger;
   VkSurfaceKHR surface;
   kd_vk_physical_device pdevice;
+  VkDevice device;
 } kd_vk_renderer;
 
 extern kd_vk_renderer* kd_vk_renderer_create(kd_context* ctx, kd_window* output_win);

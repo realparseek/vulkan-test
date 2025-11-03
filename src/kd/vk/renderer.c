@@ -18,18 +18,23 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   VkDebugUtilsMessengerEXT debugMessenger;
   VkSurfaceKHR surface;
   kd_vk_physical_device pdevice;
+  VkDevice device;
 
   _kd_vk_renderer_create_instance(rndr, &instance);
   _kd_vk_renderer_create_debug_messenger(rndr, instance, &debugMessenger);
   _kd_vk_renderer_create_surface(rndr, instance, &surface);
   _kd_vk_renderer_choose_physical_device(rndr, instance, surface, &pdevice);
+  _kd_vk_renderer_create_device(rndr, &pdevice, &device);
 
   rndr->instance = instance;
   rndr->debugMessenger = debugMessenger;
   rndr->surface = surface;
+  rndr->pdevice = pdevice;
+  rndr->device = device;
 }
 
 void kd_vk_renderer_destroy(kd_context* ctx, kd_vk_renderer* rndr) {
+  vkDestroyDevice(rndr->device, NULL);
   vkDestroySurfaceKHR(rndr->instance, rndr->surface, NULL);
   PFN_vkDestroyDebugUtilsMessengerEXT _vk_destroy_dum = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(rndr->instance, "vkDestroyDebugUtilsMessengerEXT");
   _vk_destroy_dum(rndr->instance, rndr->debugMessenger, NULL); 
