@@ -15,6 +15,14 @@ typedef struct kd_vk_physical_device {
   VkQueue presentQueue;
 } kd_vk_physical_device;
 
+typedef struct kd_vk_swapchain {
+  VkSwapchainKHR swapchain;
+  VkSurfaceCapabilitiesKHR capabilities;
+  VkSurfaceFormatKHR format;
+  VkPresentModeKHR presentMode;
+  VkExtent2D extent;
+} kd_vk_swapchain;
+
 typedef struct kd_vk_renderer {
   kd_renderer rndr;
   VkInstance instance;
@@ -22,6 +30,7 @@ typedef struct kd_vk_renderer {
   VkSurfaceKHR surface;
   kd_vk_physical_device pdevice;
   VkDevice device;
+  kd_vk_swapchain swapchain;
 } kd_vk_renderer;
 
 extern kd_vk_renderer* kd_vk_renderer_create(kd_context* ctx, kd_window* output_win);

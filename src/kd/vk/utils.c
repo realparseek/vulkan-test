@@ -139,7 +139,20 @@ void _kd_vk_renderer_choose_physical_device(kd_vk_renderer* rndr, VkInstance ins
     VkPhysicalDeviceFeatures deviceFeatures = {};
     vkGetPhysicalDeviceFeatures(devices[i], &deviceFeatures);
 
-    if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+    uint32_t deviceExtensionCount = 0;
+    vkEnumerateDeviceExtensionProperties(devices[0], NULL, &deviceExtensionCount, NULL);
+    VkExtensionProperties deviceExtensions[deviceExtensionCount]; 
+    vkEnumerateDeviceExtensionProperties(devices[0], NULL, &deviceExtensionCount, deviceExtensions);
+  
+    int8_t swapchainSupport = 0;
+    for (int i = 0; i < deviceExtensionCount; i++) {
+      if (strcmp(deviceExtensions[i].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0) {
+        swapchainSupport = 1;
+        break;
+      }
+    }
+
+    if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && swapchainSupport) {
       pdevice->pdevice = devices[i];
       pdevice->properties = deviceProperties;
       pdevice->features = deviceFeatures;
@@ -186,7 +199,11 @@ void _kd_vk_renderer_create_device(kd_vk_renderer* rndr, kd_vk_physical_device* 
   qCreateInfos[1].queueFamilyIndex = pdevice->presentFamilyIndex;
   qCreateInfos[1].queueCount = 1;
   qCreateInfos[1].pQueuePriorities = &qPriority; 
-   
+  
+  const char* extensions[] = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+  };
+
   VkDeviceCreateInfo deviceCreateInfo = {};
   deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   deviceCreateInfo.pQueueCreateInfos = qCreateInfos;
@@ -195,7 +212,8 @@ void _kd_vk_renderer_create_device(kd_vk_renderer* rndr, kd_vk_physical_device* 
   else
     deviceCreateInfo.queueCreateInfoCount = 2;
   deviceCreateInfo.pEnabledFeatures = &pdevice->features;
-  deviceCreateInfo.enabledExtensionCount = 0;
+  deviceCreateInfo.ppEnabledExtensionNames = extensions;
+  deviceCreateInfo.enabledExtensionCount = 1;
   deviceCreateInfo.enabledLayerCount = 0;
 
   if (vkCreateDevice(pdevice->pdevice, &deviceCreateInfo, NULL, device) != VK_SUCCESS) {
@@ -209,4 +227,103 @@ void _kd_vk_renderer_get_graphics_queue(kd_vk_renderer* rndr, kd_vk_physical_dev
 
 void _kd_vk_renderer_get_present_queue(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice* ldevice, VkQueue* queue) {
   vkGetDeviceQueue(*ldevice, pdevice->presentFamilyIndex, 0, queue);
+}
+
+kd_vk_swapchain _kd_vk_renderer_get_swapchain_details(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkSurfaceKHR surface) {
+  kd_vk_swapchain ksc = {};
+  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice->pdevice, surface, &ksc.capabilities);
+  
+  // selecting surface's format
+  uint32_t formatCount = 0;
+  vkGetPhysicalDeviceSurfaceFormatsKHR(pdevice->pdevice, surface, &formatCount, NULL);
+  VkSurfaceFormatKHR formats[formatCount];
+  vkGetPhysicalDeviceSurfaceFormatsKHR(pdevice->pdevice, surface, &formatCount, formats);
+
+  VkSurfaceFormatKHR selectedFormat = {};
+  for (uint32_t i = 0; i < formatCount; i++) {
+    if (formats[i].format == VK_FORMAT_B8G8R8A8_SRGB && formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+      selectedFormat = formats[i];
+      break;
+    }
+  }
+  if (!selectedFormat.format) {
+    selectedFormat = formats[0];
+  }
+  
+  // selecting present mode
+  uint32_t presentModeCount = 0;
+  vkGetPhysicalDeviceSurfacePresentModesKHR(pdevice->pdevice, surface, &presentModeCount, NULL);
+  VkPresentModeKHR presentModes[presentModeCount];
+  vkGetPhysicalDeviceSurfacePresentModesKHR(pdevice->pdevice, surface, &presentModeCount, presentModes);
+
+  VkPresentModeKHR selectedPresentMode = 0;
+  for (uint32_t i = 0; i < presentModeCount; i++) {
+    if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+      selectedPresentMode = presentModes[i];
+      break;
+    }
+  }
+  if (!selectedPresentMode) {
+    selectedPresentMode = VK_PRESENT_MODE_FIFO_KHR;
+  }
+
+  // getting extent
+  VkExtent2D selectedExtent = {};
+  if (ksc.capabilities.currentExtent.width != UINT32_MAX) {
+    selectedExtent = ksc.capabilities.currentExtent;
+  } else if (rndr->rndr.win->api == KD_WINDOW_API_GLFW) {
+    int fwidth, fheight;
+    glfwGetFramebufferSize(((kd_glfw_window*)rndr->rndr.win)->handle, &fwidth, &fheight);
+
+    selectedExtent.width = (uint32_t)fwidth;
+    selectedExtent.height = (uint32_t)fheight;
+    uint32_t minWidth = ksc.capabilities.minImageExtent.width;
+    uint32_t maxWidth = ksc.capabilities.maxImageExtent.width;
+    uint32_t minHeight = ksc.capabilities.minImageExtent.height;
+    uint32_t maxHeight = ksc.capabilities.maxImageExtent.height;
+    
+    // clamping width and height values to supported ones
+    selectedExtent.width = (selectedExtent.width < minWidth ? minWidth : selectedExtent.width);
+    selectedExtent.width = (selectedExtent.width > maxWidth ? maxWidth : selectedExtent.width);
+    selectedExtent.height = (selectedExtent.height < minHeight ? minHeight : selectedExtent.height);
+    selectedExtent.height = (selectedExtent.height > maxHeight ? maxHeight : selectedExtent.height);
+  }
+  
+  ksc.format = selectedFormat;
+  ksc.presentMode = selectedPresentMode;
+  ksc.extent = selectedExtent;
+  return ksc;
+}
+
+void _kd_vk_renderer_create_swapchain(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice device, VkSurfaceKHR surface, kd_vk_swapchain* swapchain) {
+  kd_vk_swapchain ksc = _kd_vk_renderer_get_swapchain_details(rndr, pdevice, surface);
+
+  VkSwapchainCreateInfoKHR scCreateInfo = {};
+  scCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  scCreateInfo.imageFormat = ksc.format.format;
+  scCreateInfo.imageColorSpace = ksc.format.colorSpace;
+  scCreateInfo.presentMode = ksc.presentMode;
+  scCreateInfo.imageExtent = ksc.extent;
+  scCreateInfo.clipped = VK_TRUE;
+  scCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  scCreateInfo.preTransform = ksc.capabilities.currentTransform;
+  scCreateInfo.surface = surface;
+  scCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  scCreateInfo.minImageCount = ksc.capabilities.minImageCount;
+  scCreateInfo.imageArrayLayers = 1;
+
+  uint32_t queueFamilyIndices[] = { pdevice->graphicsFamilyIndex, pdevice->presentFamilyIndex };
+  if (pdevice->graphicsFamilyIndex == pdevice->presentFamilyIndex) {
+    scCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    scCreateInfo.queueFamilyIndexCount = 0;
+    scCreateInfo.pQueueFamilyIndices = NULL;
+  } else {
+    scCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+    scCreateInfo.queueFamilyIndexCount = 2;
+    scCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
+  }
+
+  if (vkCreateSwapchainKHR(device, &scCreateInfo, NULL, &swapchain->swapchain) != VK_SUCCESS) {
+    puts("failed to create vulkan's swapchain");
+  }
 }
