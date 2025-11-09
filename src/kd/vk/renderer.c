@@ -39,6 +39,9 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
 }
 
 void kd_vk_renderer_destroy(kd_context* ctx, kd_vk_renderer* rndr) {
+  for (uint32_t iv = 0; iv < rndr->swapchain.imageCount; iv++) {
+    vkDestroyImageView(rndr->device, rndr->swapchain.imageViews[iv], NULL);
+  }
   vkDestroySwapchainKHR(rndr->device, rndr->swapchain.swapchain, NULL);
   vkDestroyDevice(rndr->device, NULL);
   vkDestroySurfaceKHR(rndr->instance, rndr->surface, NULL);

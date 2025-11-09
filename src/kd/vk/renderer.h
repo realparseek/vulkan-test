@@ -21,6 +21,9 @@ typedef struct kd_vk_swapchain {
   VkSurfaceFormatKHR format;
   VkPresentModeKHR presentMode;
   VkExtent2D extent;
+  VkImage images[6];
+  VkImageView imageViews[6];
+  uint32_t imageCount;
 } kd_vk_swapchain;
 
 typedef struct kd_vk_renderer {

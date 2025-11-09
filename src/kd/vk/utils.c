@@ -288,29 +288,36 @@ kd_vk_swapchain _kd_vk_renderer_get_swapchain_details(kd_vk_renderer* rndr, kd_v
     selectedExtent.height = (selectedExtent.height < minHeight ? minHeight : selectedExtent.height);
     selectedExtent.height = (selectedExtent.height > maxHeight ? maxHeight : selectedExtent.height);
   }
-  
+
+  uint32_t selectedImageCount = ksc.capabilities.minImageCount + 1;
+  if (ksc.capabilities.minImageCount > 0 && selectedImageCount > ksc.capabilities.maxImageCount) {
+    selectedImageCount = ksc.capabilities.maxImageCount;
+  }
+
   ksc.format = selectedFormat;
   ksc.presentMode = selectedPresentMode;
   ksc.extent = selectedExtent;
+  ksc.imageCount = selectedImageCount;
   return ksc;
 }
 
 void _kd_vk_renderer_create_swapchain(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice device, VkSurfaceKHR surface, kd_vk_swapchain* swapchain) {
-  kd_vk_swapchain ksc = _kd_vk_renderer_get_swapchain_details(rndr, pdevice, surface);
+  *swapchain = _kd_vk_renderer_get_swapchain_details(rndr, pdevice, surface);
 
   VkSwapchainCreateInfoKHR scCreateInfo = {};
   scCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-  scCreateInfo.imageFormat = ksc.format.format;
-  scCreateInfo.imageColorSpace = ksc.format.colorSpace;
-  scCreateInfo.presentMode = ksc.presentMode;
-  scCreateInfo.imageExtent = ksc.extent;
+  scCreateInfo.imageFormat = swapchain->format.format;
+  scCreateInfo.imageColorSpace = swapchain->format.colorSpace;
+  scCreateInfo.presentMode = swapchain->presentMode;
+  scCreateInfo.imageExtent = swapchain->extent;
   scCreateInfo.clipped = VK_TRUE;
   scCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-  scCreateInfo.preTransform = ksc.capabilities.currentTransform;
+  scCreateInfo.preTransform = swapchain->capabilities.currentTransform;
   scCreateInfo.surface = surface;
   scCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  scCreateInfo.minImageCount = ksc.capabilities.minImageCount;
+  scCreateInfo.minImageCount = swapchain->imageCount;
   scCreateInfo.imageArrayLayers = 1;
+  scCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
   uint32_t queueFamilyIndices[] = { pdevice->graphicsFamilyIndex, pdevice->presentFamilyIndex };
   if (pdevice->graphicsFamilyIndex == pdevice->presentFamilyIndex) {
@@ -325,5 +332,31 @@ void _kd_vk_renderer_create_swapchain(kd_vk_renderer* rndr, kd_vk_physical_devic
 
   if (vkCreateSwapchainKHR(device, &scCreateInfo, NULL, &swapchain->swapchain) != VK_SUCCESS) {
     puts("failed to create vulkan's swapchain");
+  }
+  
+  vkGetSwapchainImagesKHR(device, swapchain->swapchain, &swapchain->imageCount, NULL); 
+  if (swapchain->imageCount > 6) {
+    puts("Swapchain's images not created");
+    return;
+  }
+  vkGetSwapchainImagesKHR(device, swapchain->swapchain, &swapchain->imageCount, swapchain->images);
+
+  VkImageViewCreateInfo ivCreateInfo = {};
+  ivCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ivCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  ivCreateInfo.format = swapchain->format.format;
+  ivCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ivCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ivCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ivCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ivCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  ivCreateInfo.subresourceRange.baseArrayLayer = 0;
+  ivCreateInfo.subresourceRange.layerCount = 1;
+  ivCreateInfo.subresourceRange.baseMipLevel = 0;
+  ivCreateInfo.subresourceRange.levelCount = 1;
+
+  for (uint32_t i = 0; i < swapchain->imageCount; i++) {
+    ivCreateInfo.image = swapchain->images[i];
+    vkCreateImageView(device, &ivCreateInfo, NULL, &swapchain->imageViews[i]);
   }
 }
