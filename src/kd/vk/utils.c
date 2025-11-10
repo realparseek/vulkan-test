@@ -374,6 +374,8 @@ void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice device, VkPi
   VkGraphicsPipelineCreateInfo pipCreateInfo = {};
   pipCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
+
+
   // if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, , NULL, pipeline) != VK_SUCCESS) {
   //   puts("failed to create vulkan's graphics pipeline");
   // }
