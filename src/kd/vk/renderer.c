@@ -32,11 +32,7 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   _kd_vk_renderer_get_graphics_queue(rndr, &pdevice, &device, &pdevice.graphicsQueue);
   _kd_vk_renderer_get_present_queue(rndr, &pdevice, &device, &pdevice.presentQueue);
   _kd_vk_renderer_create_swapchain(rndr, &pdevice, device, surface, &swapchain);
- 
-  uint32_t fsize = kd_file_size("./.clangd", KD_FILE_TYPE_TEXT);
-  char filebuf[fsize+1];
-  kd_file_read("./.clangd", KD_FILE_TYPE_TEXT, filebuf, fsize);
-  printf(".clangd:\n%s\n", filebuf);
+  _kd_vk_renderer_create_pipeline(rndr, device, &pipeline);
 
   rndr->instance = instance;
   rndr->debugMessenger = debugMessenger;

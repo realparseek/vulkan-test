@@ -30,3 +30,5 @@ extern void _kd_vk_renderer_get_present_queue(kd_vk_renderer* rndr, kd_vk_physic
 extern kd_vk_swapchain _kd_vk_renderer_get_swapchain_details(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkSurfaceKHR surface);
 
 extern void _kd_vk_renderer_create_swapchain(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice device, VkSurfaceKHR surface, kd_vk_swapchain* swapchain);
+
+extern void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice device, kd_vk_swapchain* swapchain, VkPipeline* pipeline);
