@@ -1,7 +1,9 @@
 #include <kd/vk/renderer.h>
 #include <kd/vk/utils.h>
 #include <kd/glfw/window.h>
+#include <kd/utils/file/file.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,6 +22,7 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   kd_vk_physical_device pdevice;
   VkDevice device;
   kd_vk_swapchain swapchain;
+  VkPipeline pipeline;
 
   _kd_vk_renderer_create_instance(rndr, &instance);
   _kd_vk_renderer_create_debug_messenger(rndr, instance, &debugMessenger);
@@ -29,6 +32,11 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   _kd_vk_renderer_get_graphics_queue(rndr, &pdevice, &device, &pdevice.graphicsQueue);
   _kd_vk_renderer_get_present_queue(rndr, &pdevice, &device, &pdevice.presentQueue);
   _kd_vk_renderer_create_swapchain(rndr, &pdevice, device, surface, &swapchain);
+ 
+  uint32_t fsize = kd_file_size("./.clangd", KD_FILE_TYPE_TEXT);
+  char filebuf[fsize+1];
+  kd_file_read("./.clangd", KD_FILE_TYPE_TEXT, filebuf, fsize);
+  printf(".clangd:\n%s\n", filebuf);
 
   rndr->instance = instance;
   rndr->debugMessenger = debugMessenger;

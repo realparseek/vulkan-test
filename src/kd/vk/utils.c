@@ -103,8 +103,17 @@ const char* _kd_vk_renderer_msg_type_to_str(VkDebugUtilsMessageTypeFlagBitsEXT t
 void _kd_vk_renderer_create_debug_messenger(kd_vk_renderer* rndr, VkInstance instance, VkDebugUtilsMessengerEXT* messenger) {
   VkDebugUtilsMessengerCreateInfoEXT dumCreateInfo = {};
   dumCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-  dumCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
-  dumCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT; 
+  dumCreateInfo.messageSeverity = 
+    // VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | 
+    VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | 
+    VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
+    // VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+    ;
+  dumCreateInfo.messageType = 
+    VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | 
+    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | 
+    VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+    ;
   dumCreateInfo.pfnUserCallback = _kd_vk_renderer_debug_callback;
   dumCreateInfo.pUserData = NULL;
 
@@ -360,3 +369,12 @@ void _kd_vk_renderer_create_swapchain(kd_vk_renderer* rndr, kd_vk_physical_devic
     vkCreateImageView(device, &ivCreateInfo, NULL, &swapchain->imageViews[i]);
   }
 }
+
+void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice device, VkPipeline* pipeline) {
+  VkGraphicsPipelineCreateInfo pipCreateInfo = {};
+  pipCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+
+  // if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, , NULL, pipeline) != VK_SUCCESS) {
+  //   puts("failed to create vulkan's graphics pipeline");
+  // }
+ }
