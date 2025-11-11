@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <vulkan/vulkan_core.h>
 
 kd_vk_renderer* kd_vk_renderer_create(kd_context* ctx, kd_window* output_win) {
   kd_vk_renderer* rndr = malloc(sizeof(kd_vk_renderer));
@@ -24,6 +25,7 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   VkRenderPass renderPass;
   VkPipelineLayout pipelineLayout;
   VkPipeline pipeline;
+  VkFramebuffer framebuffers[6];
 
   _kd_vk_renderer_create_instance(rndr, &instance);
   _kd_vk_renderer_create_debug_messenger(rndr, instance, &debugMessenger);
@@ -35,7 +37,8 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   _kd_vk_renderer_create_swapchain(rndr, &pdevice, device, surface, &swapchain);
   _kd_vk_renderer_create_pipeline_layout(device, &pipelineLayout);
   _kd_vk_renderer_create_renderpass(device, &swapchain, &renderPass);
-  _kd_vk_renderer_create_pipeline(rndr, device, &swapchain, pipelineLayout, renderPass,  &pipeline);
+  _kd_vk_renderer_create_pipeline(rndr, device, &swapchain, pipelineLayout, renderPass, &pipeline);
+  _kd_vk_renderer_create_framebuffers(device, &swapchain, renderPass, framebuffers);
 
   rndr->instance = instance;
   rndr->debugMessenger = debugMessenger;
@@ -46,9 +49,13 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   rndr->pipelineLayout = pipelineLayout;
   rndr->renderPass = renderPass;
   rndr->pipeline = pipeline;
+  memcpy(rndr->framebuffers, framebuffers, sizeof(framebuffers));
 }
 
 void kd_vk_renderer_destroy(kd_context* ctx, kd_vk_renderer* rndr) {
+  for (uint32_t f = 0; f < rndr->swapchain.imageCount; f++) {
+    vkDestroyFramebuffer(rndr->device, rndr->framebuffers[f], NULL);
+  }
   vkDestroyPipelineLayout(rndr->device, rndr->pipelineLayout, NULL);
   vkDestroyRenderPass(rndr->device, rndr->renderPass, NULL);
   vkDestroyPipeline(rndr->device, rndr->pipeline, NULL);

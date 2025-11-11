@@ -36,3 +36,5 @@ extern void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice devic
 extern void _kd_vk_renderer_create_pipeline_layout(VkDevice device, VkPipelineLayout* layout);
 
 extern void _kd_vk_renderer_create_renderpass(VkDevice device, kd_vk_swapchain* swapchain, VkRenderPass* rndrPass);
+
+extern void _kd_vk_renderer_create_framebuffers(VkDevice device, kd_vk_swapchain* swapchain, VkRenderPass renderPass, VkFramebuffer* framebuffers);

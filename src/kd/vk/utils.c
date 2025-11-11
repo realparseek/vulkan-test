@@ -539,15 +539,15 @@ void _kd_vk_renderer_create_pipeline_layout(VkDevice device, VkPipelineLayout* l
 }
 
 void _kd_vk_renderer_create_renderpass(VkDevice device, kd_vk_swapchain* swapchain, VkRenderPass* rndrPass) {
-  VkAttachmentDescription attachment = {};
+  VkAttachmentDescription attachment = {}; 
+  attachment.samples = VK_SAMPLE_COUNT_1_BIT;
   attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  attachment.samples = VK_SAMPLE_COUNT_1_BIT;
   attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
   attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
   attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-  attachment.format = VK_FORMAT_B8G8R8A8_SRGB;
+  attachment.format = swapchain->format.format;
 
   VkAttachmentReference colorAttachmentRef = {};
   colorAttachmentRef.attachment = 0;
@@ -566,5 +566,23 @@ void _kd_vk_renderer_create_renderpass(VkDevice device, kd_vk_swapchain* swapcha
 
   if (vkCreateRenderPass(device, &renderPass, NULL, rndrPass) != VK_SUCCESS) {
     puts("failed to create render pass");
+  }
+}
+
+void _kd_vk_renderer_create_framebuffers(VkDevice device, kd_vk_swapchain* swapchain, VkRenderPass renderPass, VkFramebuffer* framebuffers) {
+  VkFramebufferCreateInfo fbCreateInfo = {};
+  fbCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+  fbCreateInfo.width = swapchain->extent.width;
+  fbCreateInfo.height = swapchain->extent.height;
+  fbCreateInfo.renderPass = renderPass;
+  fbCreateInfo.layers = 1;
+
+  for (uint32_t f = 0; f < swapchain->imageCount; f++) {
+    fbCreateInfo.pAttachments = &swapchain->imageViews[f];
+    fbCreateInfo.attachmentCount = 1;
+
+    if (vkCreateFramebuffer(device, &fbCreateInfo, NULL, &framebuffers[f]) != VK_SUCCESS) {
+      printf("failed to create framebuffer #%u\n", f);
+    }
   }
 }
