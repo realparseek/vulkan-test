@@ -372,7 +372,7 @@ void _kd_vk_renderer_create_swapchain(kd_vk_renderer* rndr, kd_vk_physical_devic
   }
 }
 
-void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice device, kd_vk_swapchain* swapchain, VkPipeline* pipeline) {
+void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice device, kd_vk_swapchain* swapchain, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline* pipeline) {
   uint32_t vShaderSize = kd_file_size("build/obj/kd/vk/shaders/default_vert.spv", KD_FILE_TYPE_BINARY);
   char vShader[vShaderSize+1];
   kd_file_read("build/obj/kd/vk/shaders/default_vert.spv", KD_FILE_TYPE_BINARY, vShader, vShaderSize);
@@ -511,13 +511,11 @@ void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice device, kd_v
   pipCreateInfo.pTessellationState = NULL;
   pipCreateInfo.pDepthStencilState = NULL;
   pipCreateInfo.pColorBlendState = &colorBlend;
-
-  VkPipelineLayoutCreateInfo pipLayoutInfo = {};
-  pipLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipLayoutInfo.setLayoutCount = 0;
-  pipLayoutInfo.pSetLayouts = NULL;
-  pipLayoutInfo.pushConstantRangeCount = 0;
-  pipLayoutInfo.pPushConstantRanges = NULL;
+  pipCreateInfo.layout = pipelineLayout;
+  pipCreateInfo.renderPass = renderPass;
+  pipCreateInfo.subpass = 0;
+  pipCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
+  pipCreateInfo.basePipelineIndex = -1;
 
   if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipCreateInfo, NULL, pipeline) != VK_SUCCESS) {
     puts("failed to create vulkan's graphics pipeline");
@@ -525,4 +523,48 @@ void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice device, kd_v
   
   vkDestroyShaderModule(device, vShaderModule, NULL);
   vkDestroyShaderModule(device, fShaderModule, NULL);
- }
+}
+
+void _kd_vk_renderer_create_pipeline_layout(VkDevice device, VkPipelineLayout* layout) {
+  VkPipelineLayoutCreateInfo pipLayoutInfo = {};
+  pipLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  pipLayoutInfo.setLayoutCount = 0;
+  pipLayoutInfo.pSetLayouts = NULL;
+  pipLayoutInfo.pushConstantRangeCount = 0;
+  pipLayoutInfo.pPushConstantRanges = NULL;
+  
+  if (vkCreatePipelineLayout(device, &pipLayoutInfo, NULL, layout) != VK_SUCCESS) {
+    puts("failed to cerate pipeline layout");
+  }
+}
+
+void _kd_vk_renderer_create_renderpass(VkDevice device, kd_vk_swapchain* swapchain, VkRenderPass* rndrPass) {
+  VkAttachmentDescription attachment = {};
+  attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+  attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  attachment.format = VK_FORMAT_B8G8R8A8_SRGB;
+
+  VkAttachmentReference colorAttachmentRef = {};
+  colorAttachmentRef.attachment = 0;
+  colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  VkSubpassDescription subpass = {};
+  subpass.colorAttachmentCount = 1;
+  subpass.pColorAttachments = &colorAttachmentRef;
+
+  VkRenderPassCreateInfo renderPass = {};
+  renderPass.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  renderPass.pSubpasses = &subpass;
+  renderPass.subpassCount = 1;
+  renderPass.pAttachments = &attachment;
+  renderPass.attachmentCount = 1;
+
+  if (vkCreateRenderPass(device, &renderPass, NULL, rndrPass) != VK_SUCCESS) {
+    puts("failed to create render pass");
+  }
+}

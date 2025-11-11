@@ -31,4 +31,8 @@ extern kd_vk_swapchain _kd_vk_renderer_get_swapchain_details(kd_vk_renderer* rnd
 
 extern void _kd_vk_renderer_create_swapchain(kd_vk_renderer* rndr, kd_vk_physical_device* pdevice, VkDevice device, VkSurfaceKHR surface, kd_vk_swapchain* swapchain);
 
-extern void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice device, kd_vk_swapchain* swapchain, VkPipeline* pipeline);
+extern void _kd_vk_renderer_create_pipeline(kd_vk_renderer* rndr, VkDevice device, kd_vk_swapchain* swapchain, VkPipelineLayout pipelineLayout, VkRenderPass renderPass, VkPipeline* pipeline);
+
+extern void _kd_vk_renderer_create_pipeline_layout(VkDevice device, VkPipelineLayout* layout);
+
+extern void _kd_vk_renderer_create_renderpass(VkDevice device, kd_vk_swapchain* swapchain, VkRenderPass* rndrPass);

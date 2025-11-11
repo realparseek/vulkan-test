@@ -3,7 +3,6 @@
 #include <kd/glfw/window.h>
 #include <kd/utils/file/file.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -22,6 +21,8 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   kd_vk_physical_device pdevice;
   VkDevice device;
   kd_vk_swapchain swapchain;
+  VkRenderPass renderPass;
+  VkPipelineLayout pipelineLayout;
   VkPipeline pipeline;
 
   _kd_vk_renderer_create_instance(rndr, &instance);
@@ -32,7 +33,9 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   _kd_vk_renderer_get_graphics_queue(rndr, &pdevice, &device, &pdevice.graphicsQueue);
   _kd_vk_renderer_get_present_queue(rndr, &pdevice, &device, &pdevice.presentQueue);
   _kd_vk_renderer_create_swapchain(rndr, &pdevice, device, surface, &swapchain);
-  _kd_vk_renderer_create_pipeline(rndr, device, &pipeline);
+  _kd_vk_renderer_create_pipeline_layout(device, &pipelineLayout);
+  _kd_vk_renderer_create_renderpass(device, &swapchain, &renderPass);
+  _kd_vk_renderer_create_pipeline(rndr, device, &swapchain, pipelineLayout, renderPass,  &pipeline);
 
   rndr->instance = instance;
   rndr->debugMessenger = debugMessenger;
@@ -40,9 +43,15 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   rndr->pdevice = pdevice;
   rndr->device = device;
   rndr->swapchain = swapchain;
+  rndr->pipelineLayout = pipelineLayout;
+  rndr->renderPass = renderPass;
+  rndr->pipeline = pipeline;
 }
 
 void kd_vk_renderer_destroy(kd_context* ctx, kd_vk_renderer* rndr) {
+  vkDestroyPipelineLayout(rndr->device, rndr->pipelineLayout, NULL);
+  vkDestroyRenderPass(rndr->device, rndr->renderPass, NULL);
+  vkDestroyPipeline(rndr->device, rndr->pipeline, NULL);
   for (uint32_t iv = 0; iv < rndr->swapchain.imageCount; iv++) {
     vkDestroyImageView(rndr->device, rndr->swapchain.imageViews[iv], NULL);
   }
