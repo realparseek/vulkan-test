@@ -534,7 +534,7 @@ void _kd_vk_renderer_create_pipeline_layout(VkDevice device, VkPipelineLayout* l
   pipLayoutInfo.pPushConstantRanges = NULL;
   
   if (vkCreatePipelineLayout(device, &pipLayoutInfo, NULL, layout) != VK_SUCCESS) {
-    puts("failed to cerate pipeline layout");
+    puts("failed to create pipeline layout");
   }
 }
 
