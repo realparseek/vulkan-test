@@ -38,3 +38,7 @@ extern void _kd_vk_renderer_create_pipeline_layout(VkDevice device, VkPipelineLa
 extern void _kd_vk_renderer_create_renderpass(VkDevice device, kd_vk_swapchain* swapchain, VkRenderPass* rndrPass);
 
 extern void _kd_vk_renderer_create_framebuffers(VkDevice device, kd_vk_swapchain* swapchain, VkRenderPass renderPass, VkFramebuffer* framebuffers);
+
+extern void _kd_vk_renderer_create_command_pool(VkDevice device, kd_vk_physical_device* pdevice, VkCommandPool* cmdPool);
+
+extern void _kd_vk_renderer_allocate_command_buffer(VkDevice device, VkCommandPool cmdPool, VkCommandBuffer* cmdBuffer);

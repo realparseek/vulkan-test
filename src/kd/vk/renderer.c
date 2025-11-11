@@ -26,6 +26,8 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   VkPipelineLayout pipelineLayout;
   VkPipeline pipeline;
   VkFramebuffer framebuffers[6];
+  VkCommandPool cmdPool;
+  VkCommandBuffer cmdBuffer;
 
   _kd_vk_renderer_create_instance(rndr, &instance);
   _kd_vk_renderer_create_debug_messenger(rndr, instance, &debugMessenger);
@@ -39,6 +41,8 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   _kd_vk_renderer_create_renderpass(device, &swapchain, &renderPass);
   _kd_vk_renderer_create_pipeline(rndr, device, &swapchain, pipelineLayout, renderPass, &pipeline);
   _kd_vk_renderer_create_framebuffers(device, &swapchain, renderPass, framebuffers);
+  _kd_vk_renderer_create_command_pool(device, &pdevice, &cmdPool);
+  _kd_vk_renderer_allocate_command_buffer(device, cmdPool, &cmdBuffer);
 
   rndr->instance = instance;
   rndr->debugMessenger = debugMessenger;
@@ -50,9 +54,12 @@ void kd_vk_renderer_initialize(kd_context* ctx, kd_vk_renderer* rndr) {
   rndr->renderPass = renderPass;
   rndr->pipeline = pipeline;
   memcpy(rndr->framebuffers, framebuffers, sizeof(framebuffers));
+  rndr->cmdPool = cmdPool;
+  rndr->cmdBuffer = cmdBuffer;
 }
 
 void kd_vk_renderer_destroy(kd_context* ctx, kd_vk_renderer* rndr) {
+  vkDestroyCommandPool(rndr->device, rndr->cmdPool, NULL);
   for (uint32_t f = 0; f < rndr->swapchain.imageCount; f++) {
     vkDestroyFramebuffer(rndr->device, rndr->framebuffers[f], NULL);
   }

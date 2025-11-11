@@ -38,6 +38,8 @@ typedef struct kd_vk_renderer {
   VkRenderPass renderPass;
   VkPipeline pipeline;
   VkFramebuffer framebuffers[6];
+  VkCommandPool cmdPool;
+  VkCommandBuffer cmdBuffer;
 } kd_vk_renderer;
 
 extern kd_vk_renderer* kd_vk_renderer_create(kd_context* ctx, kd_window* output_win);

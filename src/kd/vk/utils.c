@@ -586,3 +586,26 @@ void _kd_vk_renderer_create_framebuffers(VkDevice device, kd_vk_swapchain* swapc
     }
   }
 }
+
+void _kd_vk_renderer_create_command_pool(VkDevice device, kd_vk_physical_device* pdevice, VkCommandPool* cmdPool) {
+  VkCommandPoolCreateInfo cpCreateInfo = {};
+  cpCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  cpCreateInfo.queueFamilyIndex = pdevice->graphicsFamilyIndex;
+  cpCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+  if (vkCreateCommandPool(device, &cpCreateInfo, NULL, cmdPool) != VK_SUCCESS) {
+    puts("failed to create command pool");
+  }
+}
+
+void _kd_vk_renderer_allocate_command_buffer(VkDevice device, VkCommandPool cmdPool, VkCommandBuffer* cmdBuffer) {
+  VkCommandBufferAllocateInfo cbAllocInfo = {};
+  cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  cbAllocInfo.commandPool = cmdPool;
+  cbAllocInfo.commandBufferCount = 1;
+  cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+  if (vkAllocateCommandBuffers(device, &cbAllocInfo, cmdBuffer) != VK_SUCCESS) {
+    puts("failed to allocate command buffer");
+  }
+}
